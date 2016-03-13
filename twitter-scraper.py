@@ -14,34 +14,17 @@ import getopt
 import config
 
 # ==================================================
-# STEP TWO - WHAT TO TRACK, HASHTAGS, MENTIONS, ETC.
+# WHAT TO TRACK, HASHTAGS, MENTIONS, ETC.
 # ==================================================
 #
 # Set what to watch for
-TRACK_BY = ['#twitterscraper', '@twitter']
-# Auto reply to users who use these tags?
-AUTO_REPLY = False
+TRACK_BY = ['#springbreak', '#springbreak2k16', '#sb2k16', '#pcb2k16']
 
-# ==================================================
-# STEP THREE - VERIFY MONGODB LOGIN
-# ==================================================
-#
-# Set passwords for your databases
-DEV_DB_USER = 'twitterScraper'
-DEV_DB_PASSWORD = 'twitterScraper'
-DB_USER = 'twitterScraper'
-DB_PASSWORD = 'twitterScraper'
 # Set up Mongodb
 client = MongoClient('mongodb://localhost')
 # Set Collections, these get set in main
 TWEETS = None
 USERS = None
-
-# Are we Developing?
-DEVELOPER_MODE = False
-# Verbose Output?
-VERBOSE = False
-
 
 class TwitterStreamer(TwythonStreamer):
     """
@@ -73,16 +56,6 @@ class TwitterStreamer(TwythonStreamer):
     def save_mentions(self, tweet):
         for mention in tweet['entities']['user_mentions']:
             screen_name = USERS.find_one({'twitter': mention['screen_name']})
-            if AUTO_REPLY and not DEVELOPER_MODE:
-                # Send message to user if not in DEVELOPER_MODE
-                send_message = 'Sending message to @%s. %s' % (
-                    tweet['user']['screen_name'], datetime.datetime.now())
-                logging.info(send_message)
-                if VERBOSE:
-                    print send_message
-                message_thread = TweetMaker(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET,
-                                            tweet['user']['screen_name'])
-                message_thread.start()
             # If no user (mention) was found in our database let's save it
             if not screen_name:
                 USERS.insert({
@@ -95,35 +68,6 @@ class TwitterStreamer(TwythonStreamer):
                 logging.info(added_message)
                 if VERBOSE:
                     print added_message
-
-
-class TweetMaker(threading.Thread):
-    """
-    TweetMaker is a self-contained thread for sending a message via Twitter.  It uses whatever access token
-    you give it.
-    """
-
-    def __init__(self, consumer_key, consumer_secret, access_token_key, access_token_secret, mention):
-        threading.Thread.__init__(self)
-        self.consumer_key = consumer_key
-        self.consumer_secret = consumer_secret
-        self.access_token_key = access_token_key
-        self.access_token_secret = access_token_secret
-        self.mention = mention
-        self.twitter = Twython(consumer_key, consumer_secret,
-                               access_token_key, access_token_secret)
-
-    def run(self):
-        try:
-            # Update to whatever message you want autosent back
-            self.twitter.update_status(
-                status='@%s, thanks for the mention!' % self.mention)
-        except:
-            error_message = 'Failed to send tweet to @%s! %s' % (
-                self.mention, datetime.datetime.now())
-            logging.error(error_message)
-            if VERBOSE:
-                print error_message
 
 
 def run_stream():
