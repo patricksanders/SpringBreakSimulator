@@ -60,3 +60,9 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# vim swap
+.*.swp
+
+# Don't include secrets!
+config.py
