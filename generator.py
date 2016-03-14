@@ -1,6 +1,6 @@
 import random
 
-class MarkovDict(object):
+class GeneratorDict(object):
 
     def __init__(self, text, order, output_count):
         self.text = text
@@ -9,7 +9,6 @@ class MarkovDict(object):
         self.output_count = output_count
 
 
-    # read through filetext to count frequencies based on markov order
     def read_text(self):
         words = self.text.split()
 
