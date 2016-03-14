@@ -41,7 +41,7 @@ class TwitterStreamer(TwythonStreamer):
                 has_coords = True
                 coords_message = 'Tweet has coordinates!'
                 logging.info(coords_message)
-                if VERBOSE:
+                if config.VERBOSE:
                     print coords_message
             # Save Tweet
             TWEETS.insert(tweet)
@@ -66,28 +66,28 @@ class TwitterStreamer(TwythonStreamer):
                 added_message = 'Added @%s! %s' % (
                     mention['screen_name'], datetime.datetime.now())
                 logging.info(added_message)
-                if VERBOSE:
+                if config.VERBOSE:
                     print added_message
 
 
 def run_stream():
     stream = TwitterStreamer(
-        CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
+        config.CONSUMER_KEY, config.CONSUMER_SECRET, config.ACCESS_TOKEN_KEY, config.ACCESS_TOKEN_SECRET)
     started_message = 'Started Twitter Scraper!!! %s' % datetime.datetime.now()
     logging.info(started_message)
-    if VERBOSE:
+    if config.VERBOSE:
         print started_message
 
-    if DEVELOPER_MODE:
+    if config.DEVELOPER_MODE:
         # Get Worldwide trending topics to filter by for development
-        twitter = Twython(CONSUMER_KEY, CONSUMER_SECRET,
-                          ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
+        twitter = Twython(config.CONSUMER_KEY, config.CONSUMER_SECRET,
+                          config.ACCESS_TOKEN_KEY, config.ACCESS_TOKEN_SECRET)
         trending = twitter.get_place_trends(id=1)[0]['trends']
         global TRACK_BY
         TRACK_BY = []
         for trend in trending:
             TRACK_BY.append(trend['name'])
-    if VERBOSE:
+    if config.VERBOSE:
         print 'Scraping tweets with any of the following: %s' % TRACK_BY
     stream.statuses.filter(track=TRACK_BY)
 
@@ -117,12 +117,12 @@ def main(argv):
     logging.basicConfig(filename='twitter-scraper.log', level=logging.DEBUG)
 
     # Set DBs
-    if DEVELOPER_MODE:
+    if config.DEVELOPER_MODE:
         authenticated = client.dev_tweets.authenticate(
-            DEV_DB_USER, DEV_DB_PASSWORD)
+            config.DEV_DB_USER, config.DEV_DB_PASSWORD)
         db = client.dev_tweets
     else:
-        authenticated = client.tweets.authenticate(DB_USER, DB_PASSWORD)
+        authenticated = client.tweets.authenticate(config.DB_USER, config.DB_PASSWORD)
         db = client.tweets
 
     # Set Collections
